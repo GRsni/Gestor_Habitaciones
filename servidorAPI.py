@@ -1,11 +1,10 @@
-from bottle import route, run, template, response, request, get, post, put, delete
-import numpy as np
+from bottle import route, run, template,response,request,get,post,put
 import json
+import numpy as np
 
 contadorHabitaciones = 0
 
 habitaciones = dict()
-
 
 class Room():
     def __init__(self, idd, plazas, precio):  #
@@ -13,8 +12,6 @@ class Room():
         self.plazas = plazas
         self.precio = precio
         self.ocupacion = False
-        self.dni_ocupante = ""
-        self.telefono = 0
         # [0]->armario [1]-> aire acondicionado [2]-> caja fuerte [3]-> escritorio [4]->wifi
         self.equipamiento = np.random.randint(0, 2, 5)
 
@@ -25,44 +22,16 @@ class Room():
                "La habitacion tiene: " + str(self.equipamiento)
 
 
-@route('/pruebaget', method='GET')
-def index():
-    rv = "Hello World !"
-    return dict(data=rv)
-
-
-@route('/pruebapost', method='POST')
-def prueba():
-    try:
-        data = request.json
-    except:
-        raise ValueError
-    if data is None:
-        raise ValueError
-    name = data['name']
-    rv = "Hello " + name + " !"
-    return dict(data=rv)
-
-
-@route('/pruebaput', method='PUT')
-def pruebaput():
-    try:
-        data = request.json
-    except:
-        raise ValueError
-    if data is None:
-        raise ValueError
-    name = data['name']
-    rv = "Hello " + name + " !"
-
-    return dict(data=rv)
-
 
 @post('/PedirHabitacion')
 def pedir_hab():
     global contadorHabitaciones
-    data = request.json
-
+    try:
+        data = request.json
+    except:
+        raise ValueError
+    if data is None:
+        raise ValueError
     plazas = data.get('plazas')
     precio = data.get('precio')
 
@@ -80,18 +49,17 @@ def pedir_hab():
 
     return json.dumps(respuesta)
 
+@get('/ListRooms')
+def list_rooms():
+    to_return=[]
+    for key, value in habitaciones.items():
+        to_return.append({"idd":key, "plazas":value.plazas , "precio":value.precio})
 
-#@request('/listaHabitaciones', method='REQUEST')
-#def listarHab():
- #   for r in habitaciones:
-  #      print(r.listarInfo())
+    response.headers['Content-Type'] = 'application/json'
+    return json.dumps(to_return)
+
 
 
 if __name__ == "__main__":
 
     run(host='localhost', port=8080, debug=True)
-
-    rooms = [10]
-    for i in range(0, 9):
-        r = Room(i, 4)
-        print(r.listarInfo())
