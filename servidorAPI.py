@@ -8,19 +8,19 @@ habitaciones = dict()
 
 
 class Room():
-    def __init__(self, idd, plazas, precio):  #
+    def __init__(self, idd, plazas, precio,equipamiento):  #
         self.idd = idd
         self.plazas = plazas
         self.precio = precio
         self.ocupada = False
         # [0]->armario [1]-> aire acondicionado [2]-> caja fuerte [3]-> escritorio [4]->wifi
-        self.equipamiento = np.random.randint(0, 2, 5)
-
+        #self.equipamiento = np.random.randint(0, 2, 5)
+        self.equipamiento = equipamiento
     def listar_info(self):
         return "Habitacion: " + str(self.idd) + ", [Ocupada]:" + \
                str(self.ocupacion) + ", plazas: " + str(self.plazas) + \
                "\nPrecio por noche:" + str(self.precio) + \
-               "La habitacion tiene: " + str(self.equipamiento)
+               "Equipamiento: " + str(self.equipamiento)
 
 
 @post('/AddRoom')
@@ -34,11 +34,23 @@ def pedir_hab():
         raise ValueError
     plazas = data.get('plazas')
     precio = data.get('precio')
+    armario = data.get('armario')
+    ac = data.get('ac')
+    cajafuerte = data.get('cajafuerte')
+    escritorio = data.get('escritorio')
+    wifi = data.get('wifi')
 
-    if plazas is None or precio is None:
+    if plazas is None or precio is None or armario is None or ac is None or cajafuerte is None or escritorio is None or wifi is None:
         raise ValueError
 
-    room = Room(contadorHabitaciones, plazas, precio)
+    equip = []
+    equip.append(armario)
+    equip.append(ac)
+    equip.append(cajafuerte)
+    equip.append(escritorio)
+    equip.append(wifi)
+
+    room = Room(contadorHabitaciones, plazas, precio,equip)
     contadorHabitaciones += 1
 
     habitaciones[room.idd] = room
@@ -54,7 +66,7 @@ def pedir_hab():
 def list_rooms():
     to_return = []
     for key, room in habitaciones.items():
-        to_return.append({"idd": key, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada})
+        to_return.append({"idd": key, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada, "armario": room.equipamiento[0], "ac":room.equipamiento[1], "cajafuerte":room.equipamiento[2], "escritorio":room.equipamiento[3],"wifi":room.equipamiento[4]})
     response.headers['Content-Type'] = 'application/json'
     return json.dumps(to_return)
 

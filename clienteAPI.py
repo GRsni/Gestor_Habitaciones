@@ -6,9 +6,10 @@ urlAdd = '/AddRoom'
 urlListAll = '/ListRooms'
 
 
-def AddRoom(plazas, precio):
+def AddRoom(plazas, precio, armario, ac, cajafuerte, escritorio, wifi):
     # INSERTA 1 HABITACIÓN
-    data2 = {'plazas': plazas, 'precio': precio}
+    data2 = {'plazas': plazas, 'precio': precio, 'armario': armario, 'ac': ac, 'cajafuerte': cajafuerte,
+             'escritorio': escritorio, 'wifi': wifi}
     headers2 = {'Content-type': 'application/json', 'Accept': 'text/plain'}
     r2 = requests.post(str(urlBase + urlAdd), data=json.dumps(data2), headers=headers2)
     d2 = r2.json()
@@ -20,8 +21,19 @@ def ListarHabitaciones():
     response = requests.get(str(urlBase + urlListAll))
     d = response.json()
     for r in d:
-        print('idd: ' + str(r['idd']) + ' plazas: ' + str(r['plazas']) + ' precio: ' +
-              str(r['precio']) + ' €\nOcupada: ' + str(r['ocupada']) + "\n")
+        out = 'idd: ' + str(r['idd']) + ' plazas: ' + str(r['plazas']) + ' precio: ' + str(
+            r['precio']) + ' € Ocupada: ' + str(r['ocupada']) + '\n EQUIPAMIENTO: \n'
+        if r['armario'] == 1:
+            out += '\t- armario \n'
+        if r['ac'] == 1:
+            out += '\t- aire acondicionado \n'
+        if r['cajafuerte'] == 1:
+            out += '\t- caja fuerte \n'
+        if r['escritorio'] == 1:
+            out += '\t- escritorio \n'
+        if r['wifi'] == 1:
+            out += '\t- wifi \n'
+        print(out)
 
 
 def ParseEquipment(array):
@@ -47,13 +59,21 @@ if __name__ == "__main__":
             plazas = int(input())
             print("Introduce el precio por noche:")
             precio = int(input())
-            AddRoom(plazas, precio)
+            print("¿Tiene armario? (1=si 0=no)")
+            arm = int(input())
+            print("¿Tiene aire acondicionado? (1=si 0=no)")
+            ac = int(input())
+            print("¿Tiene caja fuerte? (1=si 0=no)")
+            cf = int(input())
+            print("¿Tiene escritorio? (1=si 0=no)")
+            esc = int(input())
+            print("¿Tiene wifi? (1=si 0=no)")
+            wifi = int(input())
+            AddRoom(plazas, precio, arm, ac, cf, esc, wifi)
         elif selector == 2:
             print("Introduce el identificador de la habitacion a modificar:")
         elif selector == 3:
             print("Introduce el identificador de la habitación a consultar:")
-            
-
 
 """
 #PRUEBA POST
