@@ -4,8 +4,26 @@ urlBase = 'http://localhost:8080'
 
 urlAdd = '/AddRoom'
 urlListAll = '/ListRooms'
-urlModify='/ModifyRoom'
-urlListIdd='/ListRoomIdd'
+urlModify = '/ModifyRoom'
+urlListIdd = '/ListRoomIdd'
+
+
+def AddRoomMenu():
+    print("Introduce las plazas de la habitacion:")
+    plazas = int(input())
+    print("Introduce el precio por noche:")
+    precio = int(input())
+    print("¿Tiene armario? (1=si 0=no)")
+    arm = int(input())
+    print("¿Tiene aire acondicionado? (1=si 0=no)")
+    ac = int(input())
+    print("¿Tiene caja fuerte? (1=si 0=no)")
+    cf = int(input())
+    print("¿Tiene escritorio? (1=si 0=no)")
+    esc = int(input())
+    print("¿Tiene wifi? (1=si 0=no)")
+    wifi = int(input())
+    AddRoom(plazas, precio, arm, ac, cf, esc, wifi)
 
 
 def AddRoom(plazas, precio, armario, ac, cajafuerte, escritorio, wifi):
@@ -18,60 +36,82 @@ def AddRoom(plazas, precio, armario, ac, cajafuerte, escritorio, wifi):
     print("Id de habitacion insertada: " + str(d2['idd']))
 
 
-def ListarHabitaciones():
-    # LISTA LAS HABITACIONES
-    response = requests.get(str(urlBase + urlListAll))
-    d = response.json()
-    for r in d:
-        out = 'idd: ' + str(r['idd']) + ' plazas: ' + str(r['plazas']) + ' precio: ' + str(
-            r['precio']) + ' € Ocupada: '
-        if r['ocupada']==1:
-            out+=' si '
-        else:
-            out+=' no'
-        out+= '\n EQUIPAMIENTO: \n'
-        if r['armario'] == 1:
-            out += '\t- armario \n'
-        if r['ac'] == 1:
-            out += '\t- aire acondicionado \n'
-        if r['cajafuerte'] == 1:
-            out += '\t- caja fuerte \n'
-        if r['escritorio'] == 1:
-            out += '\t- escritorio \n'
-        if r['wifi'] == 1:
-            out += '\t- wifi \n'
-        print(out)
-
-
-def ListRoomIdd(idd):
-    # LISTA LAS HABITACIONES
-    response = requests.get(str(urlBase + urlListIdd+'/'+str(idd)))
-    r = response.json()
-    out = 'idd: ' + str(r['idd']) + ' plazas: ' + str(r['plazas']) + ' precio: ' + str(
-        r['precio']) + ' € Ocupada: '
-    if r['ocupada'] == 1:
+def GetRoomStringFromJSON(data):
+    out = 'idd: ' + str(data['idd']) + ' plazas: ' + str(data['plazas']) + ' precio: ' + \
+          str(data['precio']) + ' € Ocupada: '
+    if data['ocupada'] == 1:
         out += ' si '
     else:
         out += ' no'
     out += '\n EQUIPAMIENTO: \n'
-    if r['armario'] == 1:
+    if data['armario'] == 1:
         out += '\t- armario \n'
-    if r['ac'] == 1:
+    if data['ac'] == 1:
         out += '\t- aire acondicionado \n'
-    if r['cajafuerte'] == 1:
+    if data['cajafuerte'] == 1:
         out += '\t- caja fuerte \n'
-    if r['escritorio'] == 1:
+    if data['escritorio'] == 1:
         out += '\t- escritorio \n'
-    if r['wifi'] == 1:
+    if data['wifi'] == 1:
         out += '\t- wifi \n'
-    print(out)
+    return out
 
 
-def ModifyRoom(idd,plazas,precio,ocupada,op,arm,ac,cf,esc,wifi):
-    data = {'plazas': plazas, 'precio': precio,'ocupada':ocupada,'op':op, 'armario': arm, 'ac': ac, 'cajafuerte': cf,
-             'escritorio': esc, 'wifi': wifi}
+def ListRooms():
+    # LISTA LAS HABITACIONES
+    response = requests.get(str(urlBase + urlListAll))
+    d = response.json()
+    for r in d:
+        print(GetRoomStringFromJSON(r))
+
+
+def ListRoomIdd(idd):
+    # LISTA LAS HABITACIONES
+    response = requests.get(str(urlBase + urlListIdd + '/' + str(idd)))
+    r = response.json()
+    print(GetRoomStringFromJSON(r))
+
+
+def ListRoomsOcupancy(ocup):
+    response = requests.get(str(urlBase) + str(urlListAll))
+    rooms = response.json()
+    for r in rooms:
+        if r['ocupada'] == ocup:
+            print(GetRoomStringFromJSON(r))
+
+
+def ModifyRoomMenu():
+    arm = ac = cf = esc = wifi = 0
+    print("Introduce el identificador de la habitacion a modificar:")
+    idd = int(input())
+    print("Introduzca nuevo nº de plazas (0 si no desea modificar)")
+    plazas = int(input())
+    print("Introduce nuevo precio por noche (0 si no desea modificar)")
+    precio = int(input())
+    print("¿Se encuentra ocupada actualmente? (1=si 0=no)")
+    ocupada = int(input())
+    print("¿Desea cambiar el equipamiento? (1=si 0=no)")
+    op = int(input())
+    if op == 1:
+        print("¿Tiene armario? (1=si 0=no)")
+        arm = int(input())
+        print("¿Tiene aire acondicionado? (1=si 0=no)")
+        ac = int(input())
+        print("¿Tiene caja fuerte? (1=si 0=no)")
+        cf = int(input())
+        print("¿Tiene escritorio? (1=si 0=no)")
+        esc = int(input())
+        print("¿Tiene wifi? (1=si 0=no)")
+        wifi = int(input())
+    ModifyRoom(idd, plazas, precio, ocupada, op, arm, ac, cf, esc, wifi)
+
+
+def ModifyRoom(idd, plazas, precio, ocupada, op, arm, ac, cf, esc, wifi):
+    data = {'plazas': plazas, 'precio': precio, 'ocupada': ocupada, 'op': op, 'armario': arm, 'ac': ac,
+            'cajafuerte': cf,
+            'escritorio': esc, 'wifi': wifi}
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    r = requests.put(str(urlBase + urlModify+'/'+str(idd)), data=json.dumps(data), headers=headers)
+    r = requests.put(str(urlBase + urlModify + '/' + str(idd)), data=json.dumps(data), headers=headers)
     d = r.json()
     print("Id de habitacion modificada: " + str(d['idd']))
 
@@ -79,60 +119,42 @@ def ModifyRoom(idd,plazas,precio,ocupada,op,arm,ac,cf,esc,wifi):
 if __name__ == "__main__":
     while True:
         print("\nElije la operación a realizar:\n- [0] Listar todas las habitaciones\n- [1] Añadir habitacion\n" +
-              "- [2] Modificar datos de habitacion existente\n- [3] Consultar habitacion mediante identificador:")
-        selector = int(input())
+              "- [2] Modificar datos de habitacion existente\n- [3] Consultar habitacion mediante identificador\n" +
+              "- [4] Consultar habitaciones des/ocupadas\n- [5] Eliminar habitacion del sistema\n" +
+              "- [10] Salir de la aplicacion")
+        try:
+            selector = int(input())
+
+        except ValueError:
+            print("Error al introducir el selector")
+            break
 
         if selector == 0:
-            ListarHabitaciones()
+            print("Mostrando informacion de habitaciones:")
+            ListRooms()
         elif selector == 1:
-            print("Introduce las plazas de la habitacion:")
-            plazas = int(input())
-            print("Introduce el precio por noche:")
-            precio = int(input())
-            print("¿Tiene armario? (1=si 0=no)")
-            arm = int(input())
-            print("¿Tiene aire acondicionado? (1=si 0=no)")
-            ac = int(input())
-            print("¿Tiene caja fuerte? (1=si 0=no)")
-            cf = int(input())
-            print("¿Tiene escritorio? (1=si 0=no)")
-            esc = int(input())
-            print("¿Tiene wifi? (1=si 0=no)")
-            wifi = int(input())
-            AddRoom(plazas, precio, arm, ac, cf, esc, wifi)
+            AddRoomMenu()
         elif selector == 2:
-            arm=0
-            ac=0
-            cf=0
-            esc=0
-            wifi=0
-            print("Introduce el identificador de la habitacion a modificar:")
-            idd=int(input())
-            print("Introduzca nuevo nº de plazas (0 si no desea modificar)")
-            plazas=int(input())
-            print("Introduce nuevo precio por noche (0 si no desea modificar)")
-            precio=int(input())
-            print("¿Se encuentra ocupada actualmente? (1=si 0=no)")
-            ocupada = int(input())
-            print("¿Desea cambiar el equipamiento? (1=si 0=no)")
-            op=int(input())
-            if op==1:
-                print("¿Tiene armario? (1=si 0=no)")
-                arm = int(input())
-                print("¿Tiene aire acondicionado? (1=si 0=no)")
-                ac = int(input())
-                print("¿Tiene caja fuerte? (1=si 0=no)")
-                cf = int(input())
-                print("¿Tiene escritorio? (1=si 0=no)")
-                esc = int(input())
-                print("¿Tiene wifi? (1=si 0=no)")
-                wifi = int(input())
-            ModifyRoom(idd,plazas,precio,ocupada,op,arm,ac,cf,esc,wifi)
-
+            ModifyRoomMenu()
         elif selector == 3:
             print("Introduce el identificador de la habitación a consultar:")
-            idd=int(input())
+            idd = int(input())
             ListRoomIdd(idd)
+        elif selector == 4:
+            print("Deseas mostrar las habitaciones ocupadas o desocupadas? (1=ocupadas, 0=desocupadas)")
+            ocup = int(input())
+            if ocup == 1:
+                print("Mostrando las habitaciones ocupadas")
+            else:
+                print("Mostrando las habitaciones desocupadas")
+            ListRoomsOcupancy(ocup)
+        elif selector == 10:
+            break
+
+        else:
+            print("Selector no valido. Elije una opcion entre las existentes.")
+
+    print("Saliendo de la aplicacion.")
 
 """
 #PRUEBA POST
