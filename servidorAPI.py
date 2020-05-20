@@ -1,34 +1,79 @@
 from bottle import route, run, template, response, request, get, post, put
 import json
+import os
 import numpy as np
-
-contadorHabitaciones = 1
 
 habitaciones = dict()
 
 
-class Room():
-    def __init__(self, idd, plazas, precio,equipamiento):  #
+class Room:
+    def __init__(self, idd, plazas, precio, ocupada, equipamiento):  #
         self.idd = idd
         self.plazas = plazas
         self.precio = precio
-        self.ocupada = 0 #0: libre 1:ocupada
+        self.ocupada = ocupada
         # [0]->armario [1]-> aire acondicionado [2]-> caja fuerte [3]-> escritorio [4]->wifi
         self.equipamiento = equipamiento
-    def listar_info(self):
+
+    def list_info(self):
         return "Habitacion: " + str(self.idd) + ", [Ocupada]:" + \
-               str(self.ocupacion) + ", plazas: " + str(self.plazas) + \
+               str(self.ocupada) + ", plazas: " + str(self.plazas) + \
                "\nPrecio por noche:" + str(self.precio) + \
                "Equipamiento: " + str(self.equipamiento)
 
 
+def database_to_json():
+    datos = {'habitaciones': []}
+    for key, room in habitaciones.items():
+        datos['habitaciones'].append(
+            {"idd": key,
+             "plazas": room.plazas,
+             "precio": room.precio,
+             "ocupada": room.ocupada,
+             "equipamiento": {
+                 "armario": room.equipamiento[0],
+                 "aire": room.equipamiento[1],
+                 "caja": room.equipamiento[2],
+                 "escritorio": room.equipamiento[3],
+                 "wifi": room.equipamiento[4]
+             }
+             })
+    return datos
+
+
+def save_database():
+    outfile = open('database.json', 'w')
+    json.dump(database_to_json(), outfile)
+    outfile.close()
+
+
+def read_database():
+    try:
+        infile = open('database.json', "r")
+    except FileNotFoundError:
+        return
+    datos = json.load(infile)
+    for d in datos['habitaciones']:
+        equip = []
+        datos_equipo = d['equipamiento']
+        equip.append(datos_equipo['armario'])
+        equip.append(datos_equipo['aire'])
+        equip.append(datos_equipo['caja'])
+        equip.append(datos_equipo['escritorio'])
+        equip.append(datos_equipo['wifi'])
+
+        room = Room(len(habitaciones), d['plazas'], d['precio'], d['ocupada'], equip)
+        habitaciones[room.idd] = room
+        print("Añadida habitacion con idd:" + str(room.idd))
+
+
 @post('/AddRoom')
-def pedir_hab():
-    global contadorHabitaciones
+def add_room():
     try:
         data = request.json
-    except:
-        raise ValueError
+    except ValueError:
+        print("Error al recibir los datos del cliente")
+        return
     if data is None:
         raise ValueError
     plazas = data.get('plazas')
@@ -42,15 +87,9 @@ def pedir_hab():
     if plazas is None or precio is None or armario is None or ac is None or cajafuerte is None or escritorio is None or wifi is None:
         raise ValueError
 
-    equip = []
-    equip.append(armario)
-    equip.append(ac)
-    equip.append(cajafuerte)
-    equip.append(escritorio)
-    equip.append(wifi)
+    equip = [armario, ac, cajafuerte, escritorio, wifi]
 
-    room = Room(contadorHabitaciones, plazas, precio,equip)
-    contadorHabitaciones += 1
+    room = Room(len(habitaciones), plazas, precio, False, equip)
 
     habitaciones[room.idd] = room
 
@@ -58,6 +97,7 @@ def pedir_hab():
 
     respuesta = {'idd': room.idd, 'plazas': room.plazas, 'precio': room.precio}
 
+    save_database()
     return json.dumps(respuesta)
 
 
@@ -65,15 +105,20 @@ def pedir_hab():
 def list_rooms():
     to_return = []
     for key, room in habitaciones.items():
-        to_return.append({"idd": key, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada, "armario": room.equipamiento[0], "ac":room.equipamiento[1], "cajafuerte":room.equipamiento[2], "escritorio":room.equipamiento[3],"wifi":room.equipamiento[4]})
+        to_return.append({"idd": key, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada,
+                          "armario": room.equipamiento[0], "ac": room.equipamiento[1],
+                          "cajafuerte": room.equipamiento[2], "escritorio": room.equipamiento[3],
+                          "wifi": room.equipamiento[4]})
     response.headers['Content-Type'] = 'application/json'
     return json.dumps(to_return)
 
 
 @get('/ListRoomIdd/<idd_hab>')
 def list_room_idd(idd_hab):
-    room=habitaciones[int(idd_hab)]
-    respuesta= {"idd": room.idd, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada, "armario": room.equipamiento[0], "ac":room.equipamiento[1], "cajafuerte":room.equipamiento[2], "escritorio":room.equipamiento[3],"wifi":room.equipamiento[4]}
+    room = habitaciones[int(idd_hab)]
+    respuesta = {"idd": room.idd, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada,
+                 "armario": room.equipamiento[0], "ac": room.equipamiento[1], "cajafuerte": room.equipamiento[2],
+                 "escritorio": room.equipamiento[3], "wifi": room.equipamiento[4]}
     response.headers['Content-Type'] = 'application/json'
     return json.dumps(respuesta)
 
@@ -81,46 +126,41 @@ def list_room_idd(idd_hab):
 # PUT para modificar habitacion
 @put('/ModifyRoom/<idd_hab>')
 def modify_room(idd_hab):
-    r=habitaciones[int(idd_hab)]
-    print(idd_hab)
+    r = habitaciones[int(idd_hab)]
+    print("Habitacion modificada:" + str(idd_hab))
     try:
         data = request.json
-    except:
-        raise ValueError
+    except ValueError:
+        print("Error al recibir los datos")
+        return
     if data is None:
         raise ValueError
-    new_plazas=data.get('plazas')
-    if new_plazas!=0:
-        r.plazas=new_plazas
-    new_precio=data.get('precio')
-    if  new_precio!=0:
-        r.precio=new_precio
-    ocupacion=data.get('ocupada')
-    r.ocupada=ocupacion
-    op=data.get('op')
-    if op==1:
+    new_plazas = data.get('plazas')
+    if new_plazas != 0:
+        r.plazas = new_plazas
+    new_precio = data.get('precio')
+    if new_precio != 0:
+        r.precio = new_precio
+    ocupacion = data.get('ocupada')
+    r.ocupada = ocupacion
+    op = data.get('op')
+    if op:
         armario = data.get('armario')
         ac = data.get('ac')
         cajafuerte = data.get('cajafuerte')
         escritorio = data.get('escritorio')
         wifi = data.get('wifi')
-        equip = []
-        equip.append(armario)
-        equip.append(ac)
-        equip.append(cajafuerte)
-        equip.append(escritorio)
-        equip.append(wifi)
-        r.equipamiento=equip
+        equip = [armario, ac, cajafuerte, escritorio, wifi]
+        r.equipamiento = equip
 
     response.headers['Content-Type'] = 'application/json'
 
     respuesta = {'idd': r.idd}
     print(respuesta)
+    save_database()
     return json.dumps(respuesta)
 
 
-# GET para habitacion concreta
-
-
 if __name__ == "__main__":
+    read_database()
     run(host='localhost', port=8080, debug=True)

@@ -1,0 +1,43 @@
+{
+    "habitaciones": [
+        {
+            "idd": 0,
+            "plazas": 1,
+            "precio": 1,
+            "ocupada": false,
+            "equipamiento": {
+                "armario": true,
+                "aire": true,
+                "caja": true,
+                "escritorio": true,
+                "wifi": true
+            }
+        },
+        {
+            "idd": 1,
+            "plazas": 50,
+            "precio": 1000,
+            "ocupada": true,
+            "equipamiento": {
+                "armario": false,
+                "aire": false,
+                "caja": false,
+                "escritorio": false,
+                "wifi": true
+            }
+        },
+        {
+            "idd": 2,
+            "plazas": 3,
+            "precio": 4,
+            "ocupada": false,
+            "equipamiento": {
+                "armario": true,
+                "aire": false,
+                "caja": false,
+                "escritorio": false,
+                "wifi": true
+            }
+        }
+    ]
+}
