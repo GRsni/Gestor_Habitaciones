@@ -1,7 +1,5 @@
-from bottle import route, run, template, response, request, get, post, put
+from bottle import route, run, response, request, get, post, put, delete
 import json
-import os
-import numpy as np
 
 habitaciones = dict()
 
@@ -115,6 +113,10 @@ def list_rooms():
 
 @get('/ListRoomIdd/<idd_hab>')
 def list_room_idd(idd_hab):
+    if int(idd_hab) not in habitaciones.keys():
+        print("Error en el indice de la habitacion")
+        return {}
+
     room = habitaciones[int(idd_hab)]
     respuesta = {"idd": room.idd, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada,
                  "armario": room.equipamiento[0], "ac": room.equipamiento[1], "cajafuerte": room.equipamiento[2],
@@ -126,13 +128,18 @@ def list_room_idd(idd_hab):
 # PUT para modificar habitacion
 @put('/ModifyRoom/<idd_hab>')
 def modify_room(idd_hab):
+    if int(idd_hab) not in habitaciones.keys():
+        print("Error en el indice de la habitacion")
+        return {}
+
     r = habitaciones[int(idd_hab)]
+
     print("Habitacion modificada:" + str(idd_hab))
     try:
         data = request.json
     except ValueError:
         print("Error al recibir los datos")
-        return
+        return {}
     if data is None:
         raise ValueError
     new_plazas = data.get('plazas')
@@ -156,6 +163,20 @@ def modify_room(idd_hab):
     response.headers['Content-Type'] = 'application/json'
 
     respuesta = {'idd': r.idd}
+    print(respuesta)
+    save_database()
+    return json.dumps(respuesta)
+
+
+@delete('/DeleteRoom/<idd_hab>')
+def delete_room(idd_hab):
+    if int(idd_hab) not in habitaciones.keys():
+        print("Error en el identificador de la habitacion")
+        return {}
+
+    habitaciones.pop(int(idd_hab))
+
+    respuesta = {'idd', idd_hab}
     print(respuesta)
     save_database()
     return json.dumps(respuesta)

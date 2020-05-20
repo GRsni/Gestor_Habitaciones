@@ -2,10 +2,11 @@ import requests, json
 
 urlBase = 'http://localhost:8080'
 
-urlAdd = '/AddRoom'
+urlAddRoom = '/AddRoom'
 urlListAll = '/ListRooms'
 urlModify = '/ModifyRoom'
 urlListIdd = '/ListRoomIdd'
+urlDelete = '/DeleteRoom'
 
 
 def add_room_menu():
@@ -31,9 +32,13 @@ def add_room(plazas, precio, armario, ac, cajafuerte, escritorio, wifi):
     data2 = {'plazas': plazas, 'precio': precio, 'armario': armario, 'ac': ac, 'cajafuerte': cajafuerte,
              'escritorio': escritorio, 'wifi': wifi}
     headers2 = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    r2 = requests.post(str(urlBase + urlAdd), data=json.dumps(data2), headers=headers2)
+    r2 = requests.post(str(urlBase) + str(urlAddRoom), data=json.dumps(data2), headers=headers2)
     d2 = r2.json()
-    print("Id de habitacion insertada: " + str(d2['idd']))
+
+    if 'idd' in d2:
+        print("Id de habitacion insertada: " + str(d2['idd']))
+    else:
+        print("Error al añadir la habitacion")
 
 
 def get_room_string_from_json(data):
@@ -56,7 +61,7 @@ def get_room_string_from_json(data):
 
 def list_rooms():
     # LISTA LAS HABITACIONES
-    response = requests.get(str(urlBase + urlListAll))
+    response = requests.get(str(urlBase) + str(urlListAll))
     d = response.json()
 
     for r in d:
@@ -65,9 +70,12 @@ def list_rooms():
 
 def list_room_by_id(idd):
     # LISTA LAS HABITACIONES
-    response = requests.get(str(urlBase + urlListIdd + '/' + str(idd)))
+    response = requests.get(str(urlBase) + str(urlListIdd) + '/' + str(idd))
     r = response.json()
-    print(get_room_string_from_json(r))
+    if "idd" in r:
+        print(get_room_string_from_json(r))
+    else:
+        print("Habitacion no encontrada")
 
 
 def list_rooms_by_occupancy(ocup):
@@ -109,9 +117,24 @@ def modify_room(idd, plazas, precio, ocupada, op, arm, ac, cf, esc, wifi):
             'cajafuerte': cf,
             'escritorio': esc, 'wifi': wifi}
     headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-    r = requests.put(str(urlBase + urlModify + '/' + str(idd)), data=json.dumps(data), headers=headers)
+    r = requests.put(str(urlBase) + str(urlModify) + '/' + str(idd), data=json.dumps(data), headers=headers)
+
     d = r.json()
-    print("Id de habitacion modificada: " + str(d['idd']))
+    if 'idd' in d:
+        print("Id de habitacion modificada: " + str(d['idd']))
+    else:
+        print("Error al modificar la habitacion")
+
+
+def delete_room(idd_hab):
+    headers = {'Content-Type': 'application/json', 'Accept': 'text/plain'}
+    r = requests.delete(str(urlBase) + str(urlDelete) + '/' + str(idd_hab))
+
+    d = r.json()
+    if 'idd' in d:
+        print("Identificador de habitacion eliminada: " + str(d['idd']))
+    else:
+        print("Error al eliminar la habitacion")
 
 
 if __name__ == "__main__":
@@ -135,8 +158,11 @@ if __name__ == "__main__":
             modify_room_menu()
         elif selector == 3:
             print("Introduce el identificador de la habitación a consultar:")
-            idd = int(input())
-            list_room_by_id(idd)
+            try:
+                idd = int(input())
+                list_room_by_id(idd)
+            except ValueError:
+                print("Error en el indice")
         elif selector == 4:
             print("Deseas mostrar las habitaciones ocupadas o desocupadas? (1=ocupadas, 0=desocupadas)")
             ocup = bool(input() == '1')
@@ -145,6 +171,13 @@ if __name__ == "__main__":
             else:
                 print("Mostrando las habitaciones desocupadas")
             list_rooms_by_occupancy(ocup)
+        elif selector == 5:
+            print("Introduce el identificador de la habitacion a eliminar:")
+            try:
+                idd = int(input())
+                delete_room(idd)
+            except ValueError:
+                print("Error en el indice")
         elif selector == 10:
             break
 
@@ -152,4 +185,3 @@ if __name__ == "__main__":
             print("Selector no valido. Elije una opcion entre las existentes.")
 
     print("Saliendo de la aplicacion.")
-

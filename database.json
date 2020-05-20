@@ -6,10 +6,10 @@
             "precio": 1,
             "ocupada": false,
             "equipamiento": {
-                "armario": true,
-                "aire": true,
-                "caja": true,
-                "escritorio": true,
+                "armario": false,
+                "aire": false,
+                "caja": false,
+                "escritorio": false,
                 "wifi": true
             }
         },
@@ -37,6 +37,45 @@
                 "caja": false,
                 "escritorio": false,
                 "wifi": true
+            }
+        },
+        {
+            "idd": 3,
+            "plazas": 5,
+            "precio": 200,
+            "ocupada": false,
+            "equipamiento": {
+                "armario": true,
+                "aire": true,
+                "caja": false,
+                "escritorio": false,
+                "wifi": false
+            }
+        },
+        {
+            "idd": 4,
+            "plazas": 6,
+            "precio": 100,
+            "ocupada": false,
+            "equipamiento": {
+                "armario": true,
+                "aire": true,
+                "caja": true,
+                "escritorio": true,
+                "wifi": false
+            }
+        },
+        {
+            "idd": 5,
+            "plazas": 1,
+            "precio": 100,
+            "ocupada": false,
+            "equipamiento": {
+                "armario": false,
+                "aire": false,
+                "caja": true,
+                "escritorio": false,
+                "wifi": false
             }
         }
     ]
