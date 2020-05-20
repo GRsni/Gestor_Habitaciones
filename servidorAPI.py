@@ -2,7 +2,7 @@ from bottle import route, run, template, response, request, get, post, put
 import json
 import numpy as np
 
-contadorHabitaciones = 0
+contadorHabitaciones = 1
 
 habitaciones = dict()
 
@@ -12,9 +12,8 @@ class Room():
         self.idd = idd
         self.plazas = plazas
         self.precio = precio
-        self.ocupada = False
+        self.ocupada = 0 #0: libre 1:ocupada
         # [0]->armario [1]-> aire acondicionado [2]-> caja fuerte [3]-> escritorio [4]->wifi
-        #self.equipamiento = np.random.randint(0, 2, 5)
         self.equipamiento = equipamiento
     def listar_info(self):
         return "Habitacion: " + str(self.idd) + ", [Ocupada]:" + \
@@ -71,9 +70,53 @@ def list_rooms():
     return json.dumps(to_return)
 
 
+@get('/ListRoomIdd/<idd_hab>')
+def list_room_idd(idd_hab):
+    room=habitaciones[int(idd_hab)]
+    respuesta= {"idd": room.idd, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada, "armario": room.equipamiento[0], "ac":room.equipamiento[1], "cajafuerte":room.equipamiento[2], "escritorio":room.equipamiento[3],"wifi":room.equipamiento[4]}
+    response.headers['Content-Type'] = 'application/json'
+    return json.dumps(respuesta)
+
+
 # PUT para modificar habitacion
-def modify_room():
-    print("hola")
+@put('/ModifyRoom/<idd_hab>')
+def modify_room(idd_hab):
+    r=habitaciones[int(idd_hab)]
+    print(idd_hab)
+    try:
+        data = request.json
+    except:
+        raise ValueError
+    if data is None:
+        raise ValueError
+    new_plazas=data.get('plazas')
+    if new_plazas!=0:
+        r.plazas=new_plazas
+    new_precio=data.get('precio')
+    if  new_precio!=0:
+        r.precio=new_precio
+    ocupacion=data.get('ocupada')
+    r.ocupada=ocupacion
+    op=data.get('op')
+    if op==1:
+        armario = data.get('armario')
+        ac = data.get('ac')
+        cajafuerte = data.get('cajafuerte')
+        escritorio = data.get('escritorio')
+        wifi = data.get('wifi')
+        equip = []
+        equip.append(armario)
+        equip.append(ac)
+        equip.append(cajafuerte)
+        equip.append(escritorio)
+        equip.append(wifi)
+        r.equipamiento=equip
+
+    response.headers['Content-Type'] = 'application/json'
+
+    respuesta = {'idd': r.idd}
+    print(respuesta)
+    return json.dumps(respuesta)
 
 
 # GET para habitacion concreta

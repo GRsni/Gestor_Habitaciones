@@ -4,6 +4,8 @@ urlBase = 'http://localhost:8080'
 
 urlAdd = '/AddRoom'
 urlListAll = '/ListRooms'
+urlModify='/ModifyRoom'
+urlListIdd='/ListRoomIdd'
 
 
 def AddRoom(plazas, precio, armario, ac, cajafuerte, escritorio, wifi):
@@ -22,7 +24,12 @@ def ListarHabitaciones():
     d = response.json()
     for r in d:
         out = 'idd: ' + str(r['idd']) + ' plazas: ' + str(r['plazas']) + ' precio: ' + str(
-            r['precio']) + ' € Ocupada: ' + str(r['ocupada']) + '\n EQUIPAMIENTO: \n'
+            r['precio']) + ' € Ocupada: '
+        if r['ocupada']==1:
+            out+=' si '
+        else:
+            out+=' no'
+        out+= '\n EQUIPAMIENTO: \n'
         if r['armario'] == 1:
             out += '\t- armario \n'
         if r['ac'] == 1:
@@ -36,19 +43,42 @@ def ListarHabitaciones():
         print(out)
 
 
-def ParseEquipment(array):
-    material = ("Armario grande", "Aire acondicionado", "Caja fuerte", "Escritorio", "WiFi")
-    output = ""
-    for i in array:
-        if i == 1:
-            output += material[i] + ", "
+def ListRoomIdd(idd):
+    # LISTA LAS HABITACIONES
+    response = requests.get(str(urlBase + urlListIdd+'/'+str(idd)))
+    r = response.json()
+    out = 'idd: ' + str(r['idd']) + ' plazas: ' + str(r['plazas']) + ' precio: ' + str(
+        r['precio']) + ' € Ocupada: '
+    if r['ocupada'] == 1:
+        out += ' si '
+    else:
+        out += ' no'
+    out += '\n EQUIPAMIENTO: \n'
+    if r['armario'] == 1:
+        out += '\t- armario \n'
+    if r['ac'] == 1:
+        out += '\t- aire acondicionado \n'
+    if r['cajafuerte'] == 1:
+        out += '\t- caja fuerte \n'
+    if r['escritorio'] == 1:
+        out += '\t- escritorio \n'
+    if r['wifi'] == 1:
+        out += '\t- wifi \n'
+    print(out)
 
-    return output
+
+def ModifyRoom(idd,plazas,precio,ocupada,op,arm,ac,cf,esc,wifi):
+    data = {'plazas': plazas, 'precio': precio,'ocupada':ocupada,'op':op, 'armario': arm, 'ac': ac, 'cajafuerte': cf,
+             'escritorio': esc, 'wifi': wifi}
+    headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+    r = requests.put(str(urlBase + urlModify+'/'+str(idd)), data=json.dumps(data), headers=headers)
+    d = r.json()
+    print("Id de habitacion modificada: " + str(d['idd']))
 
 
 if __name__ == "__main__":
     while True:
-        print("\nElije la operación a realizar:\n- [0] Listar todas las habitaciones:0\n- [1] Añadir habitacion:1\n" +
+        print("\nElije la operación a realizar:\n- [0] Listar todas las habitaciones\n- [1] Añadir habitacion\n" +
               "- [2] Modificar datos de habitacion existente\n- [3] Consultar habitacion mediante identificador:")
         selector = int(input())
 
@@ -71,9 +101,38 @@ if __name__ == "__main__":
             wifi = int(input())
             AddRoom(plazas, precio, arm, ac, cf, esc, wifi)
         elif selector == 2:
+            arm=0
+            ac=0
+            cf=0
+            esc=0
+            wifi=0
             print("Introduce el identificador de la habitacion a modificar:")
+            idd=int(input())
+            print("Introduzca nuevo nº de plazas (0 si no desea modificar)")
+            plazas=int(input())
+            print("Introduce nuevo precio por noche (0 si no desea modificar)")
+            precio=int(input())
+            print("¿Se encuentra ocupada actualmente? (1=si 0=no)")
+            ocupada = int(input())
+            print("¿Desea cambiar el equipamiento? (1=si 0=no)")
+            op=int(input())
+            if op==1:
+                print("¿Tiene armario? (1=si 0=no)")
+                arm = int(input())
+                print("¿Tiene aire acondicionado? (1=si 0=no)")
+                ac = int(input())
+                print("¿Tiene caja fuerte? (1=si 0=no)")
+                cf = int(input())
+                print("¿Tiene escritorio? (1=si 0=no)")
+                esc = int(input())
+                print("¿Tiene wifi? (1=si 0=no)")
+                wifi = int(input())
+            ModifyRoom(idd,plazas,precio,ocupada,op,arm,ac,cf,esc,wifi)
+
         elif selector == 3:
             print("Introduce el identificador de la habitación a consultar:")
+            idd=int(input())
+            ListRoomIdd(idd)
 
 """
 #PRUEBA POST
