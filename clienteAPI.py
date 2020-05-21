@@ -7,6 +7,7 @@ urlListAll = '/ListRooms'
 urlModify = '/ModifyRoom'
 urlListIdd = '/ListRoomIdd'
 urlDelete = '/DeleteRoom'
+urlListOcup = '/ListRoomsOcup'
 
 
 def add_room_menu():
@@ -79,10 +80,9 @@ def list_room_by_id(idd):
 
 
 def list_rooms_by_occupancy(ocup):
-    response = requests.get(str(urlBase) + str(urlListAll))
+    response = requests.get(str(urlBase) + str(urlListOcup) + '/' + str(ocup))
     rooms = response.json()
     for r in rooms:
-        if r['ocupada'] == ocup:
             print(get_room_string_from_json(r))
 
 
@@ -165,7 +165,7 @@ if __name__ == "__main__":
                 print("Error en el indice")
         elif selector == 4:
             print("Deseas mostrar las habitaciones ocupadas o desocupadas? (1=ocupadas, 0=desocupadas)")
-            ocup = bool(input() == '1')
+            ocup = int(input())
             if ocup == 1:
                 print("Mostrando las habitaciones ocupadas")
             else:

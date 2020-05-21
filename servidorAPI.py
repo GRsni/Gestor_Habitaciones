@@ -87,7 +87,7 @@ def add_room():
 
     equip = [armario, ac, cajafuerte, escritorio, wifi]
 
-    room = Room(max(habitaciones.keys())+1, plazas, precio, False, equip)
+    room = Room(max(habitaciones.keys()) + 1, plazas, precio, False, equip)
 
     habitaciones[room.idd] = room
 
@@ -107,6 +107,24 @@ def list_rooms():
                           "armario": room.equipamiento[0], "ac": room.equipamiento[1],
                           "cajafuerte": room.equipamiento[2], "escritorio": room.equipamiento[3],
                           "wifi": room.equipamiento[4]})
+    response.headers['Content-Type'] = 'application/json'
+    return json.dumps(to_return)
+
+
+@get('/ListRoomsOcup/<ocup>')
+def list_rooms_ocup(ocup):
+    to_return = []
+    if int(ocup) == 1:
+        bocup = True
+    else:
+        bocup = False
+
+    for key, room in habitaciones.items():
+        if room.ocupada == bocup:
+            to_return.append({"idd": key, "plazas": room.plazas, "precio": room.precio, "ocupada": room.ocupada,
+                              "armario": room.equipamiento[0], "ac": room.equipamiento[1],
+                              "cajafuerte": room.equipamiento[2], "escritorio": room.equipamiento[3],
+                              "wifi": room.equipamiento[4]})
     response.headers['Content-Type'] = 'application/json'
     return json.dumps(to_return)
 
