@@ -60,7 +60,7 @@ def read_database():
         equip.append(datos_equipo['escritorio'])
         equip.append(datos_equipo['wifi'])
 
-        room = Room(len(habitaciones), d['plazas'], d['precio'], d['ocupada'], equip)
+        room = Room(d['idd'], d['plazas'], d['precio'], d['ocupada'], equip)
         habitaciones[room.idd] = room
         print("Añadida habitacion con idd:" + str(room.idd))
 
@@ -87,7 +87,7 @@ def add_room():
 
     equip = [armario, ac, cajafuerte, escritorio, wifi]
 
-    room = Room(len(habitaciones), plazas, precio, False, equip)
+    room = Room(max(habitaciones.keys())+1, plazas, precio, False, equip)
 
     habitaciones[room.idd] = room
 
@@ -163,7 +163,6 @@ def modify_room(idd_hab):
     response.headers['Content-Type'] = 'application/json'
 
     respuesta = {'idd': r.idd}
-    print(respuesta)
     save_database()
     return json.dumps(respuesta)
 
@@ -176,7 +175,7 @@ def delete_room(idd_hab):
 
     habitaciones.pop(int(idd_hab))
 
-    respuesta = {'idd', idd_hab}
+    respuesta = {'idd': idd_hab}
     print(respuesta)
     save_database()
     return json.dumps(respuesta)
